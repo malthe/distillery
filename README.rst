@@ -52,8 +52,8 @@ A distillery class method allow to build dinamic value for specific field::
 All new ``User`` outputted from ``UserDistillery`` will have an ``email_address`` computed from his username and his company domain.
 
 
-Using distileries
------------------
+Using distilleries
+------------------
 
 
 Distillery.init()
