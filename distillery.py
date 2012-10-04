@@ -52,6 +52,12 @@ class Distillery(object):
         raise NotImplementedError()
 
 
+class DjangoDistillery(Distillery):
+    @classmethod
+    def save(cls, instance):
+        instance.save()
+
+
 class SQLAlchemyDistillery(Distillery):
     @classmethod
     def save(cls, instance):
