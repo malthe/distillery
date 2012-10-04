@@ -83,10 +83,43 @@ Inits, populates and persists an instance::
 ORMs
 ----
 
-Actually, ``distillery`` only supports SQLAlchemy models::
+Django
+~~~~~~
+
+Django models could be distilled using `DjangoDistillery` that only requires a `__model__` class member::
+
+    from distillery import DjangoDistillery
+
+    from django.auth.models import User
+
+    class UserDistillery(DjangoDistillery):
+        __model__ = User
+
+        #  ...
+
+
+SQLAlchemy
+~~~~~~~~~~
+
+SQLAlchemy distilleries require a `__model__` and a `__session__` class members::
 
     from distillery import SQLAlchemyDistillery
 
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
 
-    class MyDistillery(SQLAlchemyDistillery):
+    engine = create_engine('sqlite://', echo=False)
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+    Base = declarative_base()
+
+    class User(Base):
+        #  ...
+
+
+    class UserDistillery(SQLAlchemyDistillery):
+        __model__ = User
+        __session__ = session
+
         #  ...
