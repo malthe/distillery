@@ -51,7 +51,7 @@ A distillery class method allow to build dinamic value for specific field::
 
 All new ``User`` outputted from ``UserDistillery`` will have an ``email_address`` computed from his username and his company domain.
 
-Note: all lazies received an `instance` and a `sequence` that are respectively the object instance and an auto incremented sequence.
+Note: all lazies received an ``instance`` and a ``sequence`` that are respectively the object instance and an auto incremented sequence.
 
 
 Using distilleries
@@ -82,13 +82,60 @@ Inits, populates and persists an instance::
     assert user.id is not None
 
 
+Datasets
+--------
+
+``distillery`` provides a ``Set`` class that act as a fixture container.
+
+A ``Set`` needs a ``__distillery__`` class member from where all instances will born::
+
+    from distillery import Set
+
+
+    class UserSet(Set):
+        __distillery__ = UserDistillery
+
+        class jeanphix:
+            username = 'jeanphix'
+
+
+Then simply instanciate the ``UserSet`` to access the fixture objects that will be created on demand::
+
+    users = UserSet()
+    assert users.jeanphix.username == 'jeanphix'
+
+
+Cross ``Set`` relations are also allowed::
+
+    from distillery import Set
+
+
+    class CompanySet(Set):
+        __distillery__ = CompanyDistillery
+
+        class my_company:
+            name = "My company"
+
+
+    class UserSet(Set):
+        __distillery__ = UserDistillery
+
+        class jeanphix:
+            username = 'jeanphix'
+            company = CompanySet.company
+
+
+    users = UserSet()
+    assert users.jeanphix.company == 'My company'
+
+
 ORMs
 ----
 
 Django
 ~~~~~~
 
-Django models could be distilled using `DjangoDistillery` that only requires a `__model__` class member::
+Django models could be distilled using ``DjangoDistillery`` that only requires a ``__model__`` class member::
 
     from distillery import DjangoDistillery
 
@@ -103,7 +150,7 @@ Django models could be distilled using `DjangoDistillery` that only requires a `
 SQLAlchemy
 ~~~~~~~~~~
 
-SQLAlchemy distilleries require a `__model__` and a `__session__` class members::
+SQLAlchemy distilleries require a ``__model__`` and a ``__session__`` class members::
 
     from distillery import SQLAlchemyDistillery
 
