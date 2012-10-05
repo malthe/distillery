@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import weakref
 
 
 #  Stores all lazy attributes for counter creation
@@ -43,7 +44,7 @@ class Distillery(object):
 
         #  Class members
         #  Sets basic attributes then lazy ones by creation order
-        for key, member in sorted([(k, getattr(cls, k)) for k in cls.__dict__],
+        for key, member in sorted([(k, getattr(cls, k)) for k in dir(cls)],
                 key=get_counter):
             if not key in Distillery.__dict__ and not key.startswith('_') \
                     and not key in kwargs:
@@ -56,6 +57,64 @@ class Distillery(object):
         """Saves given object instance.
         """
         raise NotImplementedError()
+
+
+class SetMeta(type):
+    """Adds a `_set_class` property to all fixtures class in a set.
+    """
+    def __new__(meta, name, bases, dict_):
+        new = type.__new__(meta, name, bases, dict_)
+        for key in dict_:
+            if not key.startswith('_'):
+                setattr(getattr(new, key), '_set_class', new)
+        return new
+
+
+class Set(object):
+    """Fixtures dataset.
+    """
+    __metaclass__ = SetMeta
+    _instances = {}
+
+    def __new__(cls, *args, **kwargs):
+        if Set._instances.get(cls):
+            raise Exception("Can't create more than one `%s` instance." \
+                % cls)
+        new = super(Set, cls).__new__(cls, *args, **kwargs)
+        Set._instances[cls] = weakref.ref(new)
+        return new
+
+    def __init__(self):
+        if not hasattr(self, '__distillery__'):
+            raise AttributeError('A Set must have a `__distillery__` member.')
+        self._fixtures = {}
+
+    def __getattribute__(self, attr):
+        if attr.startswith('_'):
+            return super(Set, self).__getattribute__(attr)
+        elif not attr in dir(self):
+            raise AttributeError('Invalid fixture `%s`.' % attr)
+        elif not attr in self._fixtures:
+            fixture = super(Set, self).__getattribute__(attr)
+            kwargs = {}
+            for key in dir(fixture):
+                if not key.startswith('_'):
+                    member = getattr(fixture, key)
+                    if hasattr(member, '_set_class'):
+                        member = getattr(member._set_class._get_instance(),
+                            member.__name__)
+                    kwargs[key] = member
+            self._fixtures[attr] = self.__distillery__.create(**kwargs)
+        return self._fixtures[attr]
+
+    def __del__(self):
+        del Set._instances[self.__class__]
+
+    @classmethod
+    def _get_instance(cls):
+        if cls in Set._instances:
+            return Set._instances[cls]()
+        return cls()
 
 
 class DjangoDistillery(Distillery):
