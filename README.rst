@@ -101,7 +101,7 @@ A ``Set`` needs a ``__distillery__`` class member from where all instances will 
             username = 'jeanphix'
 
 
-Then simply instanciate the ``UserSet`` to access the fixture objects that will be created on demand::
+Then simply instanciate the ``UserSet`` to access the fixture object that will be created on demand::
 
     users = UserSet()
     assert users.jeanphix.username == 'jeanphix'
