@@ -28,6 +28,7 @@ class Distillery(object):
     def init(cls, **kwargs):
         """Inits and populate object instance.
         """
+        cls._sequence = cls.get_next_sequence()
         def set(instance, attr, value):
             if not hasattr(instance, attr):
                 raise AttributeError("`%s` has no attribute `%s`." \
@@ -48,7 +49,10 @@ class Distillery(object):
                 key=get_counter):
             if not key in Distillery.__dict__ and not key.startswith('_') \
                     and not key in kwargs:
-                value = member(instance) if callable(member) else member
+                if callable(member):
+                    value = member(instance, cls._sequence)
+                else:
+                    value = member
                 set(instance, key, value)
         return instance
 
@@ -57,6 +61,12 @@ class Distillery(object):
         """Saves given object instance.
         """
         raise NotImplementedError()
+
+    @classmethod
+    def get_next_sequence(cls):
+        if not hasattr(cls, '_sequence'):
+            return 0
+        return cls._sequence + 1
 
 
 class SetMeta(type):

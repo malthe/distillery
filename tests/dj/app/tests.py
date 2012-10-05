@@ -28,10 +28,14 @@ class DjangoDistilleryTest(TestCase, Suite):
         username = "defaultuser"
 
         @lazy
-        def email_address(cls, instance):
+        def email_address(cls, instance, sequence):
             return "%s@domain.tld" % instance.username
 
         @lazy
-        def company(cls, instance):
+        def index(cls, instance, sequence):
+            return sequence
+
+        @lazy
+        def company(cls, instance, sequence):
             return DjangoDistilleryTest\
                 .CompanyDistillery.create(name="My company")

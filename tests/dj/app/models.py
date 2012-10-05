@@ -9,5 +9,6 @@ class Company(models.Model):
 class User(models.Model):
     username = models.CharField(max_length=80, unique=True)
     email_address = models.CharField(max_length=80)
+    index = models.IntegerField(unique=True)
 
     company = models.ForeignKey('Company', null=True, blank=True)

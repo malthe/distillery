@@ -28,6 +28,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(80), unique=True, nullable=False)
     email_address = Column(String(80), unique=True, nullable=False)
+    index = Column(Integer, unique=True, nullable=False)
     company_id = Column(Integer, ForeignKey(Company.id))
 
     company = relationship(Company)
@@ -45,13 +46,17 @@ class SQLAlchemyDistilleryTest(Suite, unittest.TestCase):
         username = "defaultuser"
 
         @lazy
-        def email_address(cls, instance):
+        def email_address(cls, instance, sequence):
             return "%s@domain.tld" % instance.username
 
         @lazy
-        def company(cls, instance):
+        def company(cls, instance, sequence):
             return SQLAlchemyDistilleryTest\
                 .CompanyDistillery.create(name="My company")
+
+        @lazy
+        def index(cls, instance, sequence):
+            return sequence
 
     def setUp(self):
         Base.metadata.create_all(engine)

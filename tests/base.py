@@ -60,6 +60,11 @@ class Suite():
         self.assertRaises(AttributeError, self.UserDistillery.init)
         del self.UserDistillery.wrong
 
+    def test_sequence(self):
+        user1 = self.UserDistillery.init(company=None)
+        user2 = self.UserDistillery.init(username="anotheruser")
+        self.assertEqual(user1.index + 1, user2.index)
+
     def test_set_cant_be_instanciate_twice(self):
         user_set = UserSet()
         self.assertRaises(Exception, UserSet)
