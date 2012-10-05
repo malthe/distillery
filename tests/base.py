@@ -37,3 +37,8 @@ class Suite():
         self.assertTrue(user.id is None)
         self.UserDistillery.save(user)
         self.assertTrue(user.id is not None)
+
+    def test_invalid_attribute(self):
+        self.UserDistillery.wrong = 'invalid attribute'
+        self.assertRaises(AttributeError, self.UserDistillery.init)
+        del self.UserDistillery.wrong

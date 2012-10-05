@@ -27,10 +27,16 @@ class Distillery(object):
     def init(cls, **kwargs):
         """Inits and populate object instance.
         """
+        def set(instance, attr, value):
+            if not hasattr(instance, attr):
+                raise AttributeError("`%s` has no attribute `%s`." \
+                    % (instance.__class__.__name__, attr))
+            setattr(instance, attr, value)
+
         instance = cls.__model__()
         #  kwargs
         for key in kwargs:
-            setattr(instance, key, kwargs.get(key))
+            set(instance, key, kwargs.get(key))
 
         def get_counter((k, m)):
             return m.counter if hasattr(m, 'counter') else 0
@@ -42,7 +48,7 @@ class Distillery(object):
             if not key in Distillery.__dict__ and not key.startswith('_') \
                     and not key in kwargs:
                 value = member(instance) if callable(member) else member
-                setattr(instance, key, value)
+                set(instance, key, value)
         return instance
 
     @classmethod
