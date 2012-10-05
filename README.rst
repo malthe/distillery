@@ -46,10 +46,12 @@ A distillery class method allow to build dinamic value for specific field::
         username = "defaultusername"
 
         @lazy
-        def email_address(cls, instance):
+        def email_address(cls, instance, sequence):
             return "%s@%s" % (instance.username, instance.company.domain)
 
 All new ``User`` outputted from ``UserDistillery`` will have an ``email_address`` computed from his username and his company domain.
+
+Note: all lazies received an `instance` and a `sequence` that are respectively the object instance and an auto incremented sequence.
 
 
 Using distilleries
