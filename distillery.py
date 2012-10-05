@@ -30,7 +30,7 @@ class Distillery(object):
         instance = cls.__model__()
         #  kwargs
         for key in kwargs:
-           setattr(instance, key, kwargs.get(key))
+            setattr(instance, key, kwargs.get(key))
 
         def get_counter((k, m)):
             return m.counter if hasattr(m, 'counter') else 0
@@ -56,6 +56,7 @@ class DjangoDistillery(Distillery):
     @classmethod
     def save(cls, instance):
         instance.save()
+        return instance
 
 
 class SQLAlchemyDistillery(Distillery):
