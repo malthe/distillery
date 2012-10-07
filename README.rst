@@ -101,7 +101,7 @@ A ``Set`` needs a ``__distillery__`` class member from where all instances will 
             username = 'jeanphix'
 
 
-Then simply instanciate the ``UserSet`` to access the fixture object that will be created on demand::
+Then simply instanciate the ``UserSet`` to access the fixture object::
 
     users = UserSet()
     assert users.jeanphix.username == 'jeanphix'
@@ -129,6 +129,12 @@ Cross ``Set`` relations are also allowed::
 
     users = UserSet()
     assert users.jeanphix.company == 'My company'
+
+
+``Set`` can also create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter::
+
+    users = UserSet(on_demand=True)
+    users.jeanphix  # jeanphix will be created here.
 
 
 ORMs
