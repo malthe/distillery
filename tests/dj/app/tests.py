@@ -2,20 +2,20 @@
 from django.utils.unittest import TestCase
 
 from distillery import lazy, DjangoDistillery
-from ...base import Suite, CompanySet, UserSet
+from ...base import DistillerySuite, SetSuite, CompanySet, UserSet
 
 from models import Company, User
 
 
-class DjangoDistilleryTest(TestCase, Suite):
+class BaseTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
-        super(DjangoDistilleryTest, cls).setUpClass()
+        super(BaseTestCase, cls).setUpClass()
         CompanySet.__distillery__ = cls.CompanyDistillery
         UserSet.__distillery__ = cls.UserDistillery
 
     def setUp(self):
-        super(DjangoDistilleryTest, self).setUp()
+        super(BaseTestCase, self).setUp()
         Company.objects.all().delete()
         User.objects.all().delete()
 
@@ -37,5 +37,13 @@ class DjangoDistilleryTest(TestCase, Suite):
 
         @lazy
         def company(cls, instance, sequence):
-            return DjangoDistilleryTest\
+            return BaseTestCase\
                 .CompanyDistillery.create(name="My company")
+
+
+class DistilleryTest(BaseTestCase, DistillerySuite):
+    pass
+
+
+class SetTest(BaseTestCase, SetSuite):
+    pass

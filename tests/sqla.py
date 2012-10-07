@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from distillery import lazy, SQLAlchemyDistillery
 
-from base import Suite
+from base import DistillerySuite, SetSuite, CompanySet, UserSet
 
 
 engine = create_engine('sqlite://', echo=False)
@@ -34,7 +34,7 @@ class User(Base):
     company = relationship(Company)
 
 
-class SQLAlchemyDistilleryTest(Suite, unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
     class CompanyDistillery(SQLAlchemyDistillery):
         __session__ = session
         __model__ = Company
@@ -51,18 +51,32 @@ class SQLAlchemyDistilleryTest(Suite, unittest.TestCase):
 
         @lazy
         def company(cls, instance, sequence):
-            return SQLAlchemyDistilleryTest\
+            return BaseTestCase\
                 .CompanyDistillery.create(name="My company")
 
         @lazy
         def index(cls, instance, sequence):
             return sequence
 
+    @classmethod
+    def setUpClass(cls):
+        CompanySet.__distillery__ = cls.CompanyDistillery
+        UserSet.__distillery__ = cls.UserDistillery
+
     def setUp(self):
         Base.metadata.create_all(engine)
 
     def tearDown(self):
+        session.rollback()
         Base.metadata.drop_all(engine)
+
+
+class DistilleryTest(DistillerySuite, BaseTestCase):
+    pass
+
+
+class SetTest(SetSuite, BaseTestCase):
+    pass
 
 
 if __name__ == '__main__':
