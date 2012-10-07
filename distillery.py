@@ -95,10 +95,15 @@ class Set(object):
         Set._instances[cls] = weakref.ref(new)
         return new
 
-    def __init__(self):
+    def __init__(self, on_demand=False):
         if not hasattr(self, '__distillery__'):
             raise AttributeError('A Set must have a `__distillery__` member.')
         self._fixtures = {}
+        self._on_demand = on_demand
+        if not on_demand:
+            for member in dir(self):
+                if not member.startswith('_'):
+                    getattr(self, member)
 
     def __getattribute__(self, attr):
         if attr.startswith('_'):
@@ -118,16 +123,16 @@ class Set(object):
         del Set._instances[self.__class__]
 
     @classmethod
-    def _get_instance(cls):
+    def _get_instance(cls, on_demand):
         if cls in Set._instances:
             return Set._instances[cls]()
-        return cls()
+        return cls(on_demand)
 
     def _get_member(self, fixture, key):
         def _get_foreign(member):
             try:
-                return getattr(member._set_class._get_instance(),
-                    member.__name__)
+                return getattr(member._set_class._get_instance(
+                    self._on_demand), member.__name__)
             except AttributeError:
                 raise Exception('%s does not appear to be a valid fixture' \
                     % member)
