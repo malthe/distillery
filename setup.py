@@ -10,7 +10,7 @@ setup(
     py_modules=('distillery',),
     url='https://github.com/Birdback/distillery',
     license='MIT licence',
-    description='another factory_girl for python ORMs',
+    description='fixture utils for python ORMs',
     long_description=open('README.rst').read(),
     classifiers=[
         'Development Status :: 4 - Beta',
