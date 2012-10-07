@@ -65,6 +65,8 @@ class Distillery(object):
 
     @classmethod
     def get_next_sequence(cls):
+        """Returns the next sequence value for lazies.
+        """
         if not hasattr(cls, '_sequence'):
             return 0
         return cls._sequence + 1
