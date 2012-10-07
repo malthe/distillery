@@ -29,6 +29,7 @@ class Distillery(object):
         """Inits and populate object instance.
         """
         cls._sequence = cls.get_next_sequence()
+
         def set(instance, attr, value):
             if not hasattr(instance, attr):
                 raise AttributeError("`%s` has no attribute `%s`." \
@@ -109,11 +110,7 @@ class Set(object):
             kwargs = {}
             for key in dir(fixture):
                 if not key.startswith('_'):
-                    member = getattr(fixture, key)
-                    if hasattr(member, '_set_class'):
-                        member = getattr(member._set_class._get_instance(),
-                            member.__name__)
-                    kwargs[key] = member
+                    kwargs[key] = self._get_member(fixture, key)
             self._fixtures[attr] = self.__distillery__.create(**kwargs)
         return self._fixtures[attr]
 
@@ -125,6 +122,23 @@ class Set(object):
         if cls in Set._instances:
             return Set._instances[cls]()
         return cls()
+
+    def _get_member(self, fixture, key):
+        def _get_foreign(member):
+            try:
+                return getattr(member._set_class._get_instance(),
+                    member.__name__)
+            except AttributeError:
+                raise Exception('%s does not appear to be a valid fixture' \
+                    % member)
+
+        member = getattr(fixture, key)
+        if hasattr(member, '_set_class'):
+            member = _get_foreign(member)
+        elif isinstance(member, list) or isinstance(member, tuple):
+            member = [_get_foreign(m) for m in member]
+
+        return member
 
 
 class DjangoDistillery(Distillery):
