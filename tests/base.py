@@ -13,7 +13,7 @@ class UserSet(Set):
         company = CompanySet.my_company
 
 
-class Suite():
+class DistillerySuite():
     @classmethod
     def setUpClass(cls):
         CompanySet.__distillery__ = cls.CompanyDistillery
@@ -65,24 +65,26 @@ class Suite():
         user2 = self.UserDistillery.init(username="anotheruser")
         self.assertEqual(user1.index + 1, user2.index)
 
-    def test_set_cant_be_instanciate_twice(self):
-        user_set = UserSet()
+
+class SetSuite():
+    def test_cant_be_instanciate_twice(self):
+        UserSet()
         self.assertRaises(Exception, UserSet)
 
-    def test_set_does_not_duplicate_fixture_instance(self):
+    def test_does_not_duplicate_fixture_instance(self):
         user_set = UserSet()
         self.assertEqual(user_set.jeanphix.id, user_set.jeanphix.id)
 
-    def test_set_simple_attribute_override(self):
+    def test_simple_attribute_override(self):
         user_set = UserSet()
         self.assertEqual(user_set.jeanphix.username, 'jeanphix')
 
-    def test_set_foreign_set_fixture(self):
+    def test_foreign_set_fixture(self):
         user_set = UserSet()
         self.assertEqual(user_set.jeanphix.company.name,
             "My company")
 
-    def test_set_foreign_set_already_instanciate_fixture(self):
+    def test_foreign_set_already_instanciate_fixture(self):
         company_set = CompanySet()
         my_company = company_set.my_company
         user_set = UserSet()
