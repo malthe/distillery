@@ -90,10 +90,12 @@ class Set(object):
     _instances = {}
 
     def __new__(cls, *args, **kwargs):
-        if Set._instances.get(cls):
-            raise Exception("Can't create more than one `%s` instance." \
-                % cls)
-        new = super(Set, cls).__new__(cls, *args, **kwargs)
+        """Creates new `cls` instance or return the existing one.
+        """
+        if Set._instances.get(cls.__name__):
+            return Set._instances.get(cls.__name__)()
+        else:
+            new = super(Set, cls).__new__(cls, *args, **kwargs)
         Set._instances[cls.__name__] = weakref.ref(new)
         return new
 
@@ -123,7 +125,10 @@ class Set(object):
         return self._fixtures[attr]
 
     def __del__(self):
-        del Set._instances[self.__class__.__name__]
+        try:
+            del Set._instances[self.__class__.__name__]
+        except KeyError:
+            pass
 
     @classmethod
     def _get_instance(cls, on_demand):
