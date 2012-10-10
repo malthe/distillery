@@ -94,13 +94,14 @@ class Set(object):
             raise Exception("Can't create more than one `%s` instance." \
                 % cls)
         new = super(Set, cls).__new__(cls, *args, **kwargs)
-        Set._instances[cls] = weakref.ref(new)
+        Set._instances[cls.__name__] = weakref.ref(new)
         return new
 
     def __init__(self, on_demand=False):
         if not hasattr(self, '__distillery__'):
             raise AttributeError('A Set must have a `__distillery__` member.')
         self._fixtures = {}
+        self._foreign_sets = {}
         self._on_demand = on_demand
         if not on_demand:
             for member in dir(self):
@@ -122,19 +123,20 @@ class Set(object):
         return self._fixtures[attr]
 
     def __del__(self):
-        del Set._instances[self.__class__]
+        del Set._instances[self.__class__.__name__]
 
     @classmethod
     def _get_instance(cls, on_demand):
-        if cls in Set._instances:
-            return Set._instances[cls]()
+        if cls.__name__ in Set._instances:
+            return Set._instances[cls.__name__]()
         return cls(on_demand)
 
     def _get_member(self, fixture, key):
         def _get_foreign(member):
             try:
-                return getattr(member._set_class._get_instance(
-                    self._on_demand), member.__name__)
+                set_ =  member._set_class._get_instance(self._on_demand)
+                self._foreign_sets[member._set_class.__name__] = set_
+                return getattr(set_, member.__name__)
             except AttributeError:
                 raise Exception('%s does not appear to be a valid fixture' \
                     % member)
