@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='distillery',
-    version='0.1b2',
+    version='0.1',
     author=u'jean-philippe serafin',
     author_email='serafinjp@gmail.com',
     py_modules=('distillery',),
@@ -14,7 +14,7 @@ setup(
     include_package_data=True,
     long_description=open('README.rst').read(),
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
