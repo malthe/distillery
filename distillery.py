@@ -95,14 +95,14 @@ class Set(object):
         if Set._instances.get(cls.__name__):
             return Set._instances.get(cls.__name__)()
         new = super(Set, cls).__new__(cls, *args, **kwargs)
+        new._fixtures = {}
+        new._foreign_sets = {}
         Set._instances[cls.__name__] = weakref.ref(new)
         return new
 
     def __init__(self, on_demand=False):
         if not hasattr(self, '__distillery__'):
             raise AttributeError('A Set must have a `__distillery__` member.')
-        self._fixtures = {}
-        self._foreign_sets = {}
         self._on_demand = on_demand
         if not on_demand:
             for member in dir(self):
