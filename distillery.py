@@ -94,8 +94,7 @@ class Set(object):
         """
         if Set._instances.get(cls.__name__):
             return Set._instances.get(cls.__name__)()
-        else:
-            new = super(Set, cls).__new__(cls, *args, **kwargs)
+        new = super(Set, cls).__new__(cls, *args, **kwargs)
         Set._instances[cls.__name__] = weakref.ref(new)
         return new
 
