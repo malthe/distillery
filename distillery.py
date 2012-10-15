@@ -31,7 +31,7 @@ class Distillery(object):
         cls._sequence = cls.get_next_sequence()
 
         def set(instance, attr, value):
-            if not hasattr(instance, attr):
+            if not attr in dir(instance):
                 raise AttributeError("`%s` has no attribute `%s`." \
                     % (instance.__class__.__name__, attr))
             setattr(instance, attr, value)
@@ -148,6 +148,8 @@ class Set(object):
         member = getattr(fixture, key)
         if hasattr(member, '_set_class'):
             member = _get_foreign(member)
+        elif callable(member):
+            member = member()
         elif isinstance(member, list) or isinstance(member, tuple):
             member = [_get_foreign(m) for m in member]
 
