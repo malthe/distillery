@@ -14,11 +14,6 @@ class UserSet(Set):
 
 
 class DistillerySuite():
-    @classmethod
-    def setUpClass(cls):
-        CompanySet.__distillery__ = cls.CompanyDistillery
-        UserSet.__distillery__ = cls.UserDistillery
-
     def test_init_simple_attribute(self):
         user = self.UserDistillery.init()
         self.assertEqual(user.username, 'defaultuser')
@@ -29,7 +24,7 @@ class DistillerySuite():
 
     def test_init_relationship(self):
         user = self.UserDistillery.init()
-        self.assertEqual(user.company.name, 'My company')
+        self.assertEqual(user.company.name, "defaultuser's company")
 
     def test_init_override_simple_attribute(self):
         user = self.UserDistillery.init(username='myuser')
@@ -67,6 +62,11 @@ class DistillerySuite():
 
 
 class SetSuite():
+    @classmethod
+    def setUpClass(cls):
+        CompanySet.__distillery__ = cls.CompanyDistillery
+        UserSet.__distillery__ = cls.UserDistillery
+
     def test_cant_be_instanciate_twice(self):
         UserSet()
         self.assertRaises(Exception, UserSet)
@@ -90,3 +90,9 @@ class SetSuite():
         user_set = UserSet()
         self.assertEqual(user_set.jeanphix.company.id,
             my_company.id)
+
+    def test_set_callable_member(self):
+        class NewUserSet(UserSet):
+            admin = lambda s: self.UserDistillery.create(username="admin")
+
+        self.assertEqual(NewUserSet().admin.username, 'admin')

@@ -52,7 +52,8 @@ class BaseTestCase(unittest.TestCase):
         @lazy
         def company(cls, instance, sequence):
             return BaseTestCase\
-                .CompanyDistillery.create(name="My company")
+                .CompanyDistillery.create(name="%s's company" % \
+                    instance.username)
 
         @lazy
         def index(cls, instance, sequence):

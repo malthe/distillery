@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import weakref
+import types
 
 
 #  Stores all lazy attributes for counter creation
@@ -79,7 +80,9 @@ class SetMeta(type):
         new = type.__new__(meta, name, bases, dict_)
         for key in dict_:
             if not key.startswith('_'):
-                setattr(getattr(new, key), '_set_class', new)
+                member = getattr(new, key)
+                if not isinstance(member, types.MethodType):
+                    setattr(member, '_set_class', new)
         return new
 
 
@@ -116,11 +119,15 @@ class Set(object):
             raise AttributeError('Invalid fixture `%s`.' % attr)
         elif not attr in self._fixtures:
             fixture = super(Set, self).__getattribute__(attr)
-            kwargs = {}
-            for key in dir(fixture):
-                if not key.startswith('_'):
-                    kwargs[key] = self._get_member(fixture, key)
-            self._fixtures[attr] = self.__distillery__.create(**kwargs)
+            if isinstance(fixture, types.MethodType):
+                instance = fixture()
+            else:
+                kwargs = {}
+                for key in dir(fixture):
+                    if not key.startswith('_'):
+                        kwargs[key] = self._get_member(fixture, key)
+                instance = self.__distillery__.create(**kwargs)
+            self._fixtures[attr] = instance
         return self._fixtures[attr]
 
     def __del__(self):
