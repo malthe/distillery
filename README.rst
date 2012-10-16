@@ -131,6 +131,15 @@ Cross ``Set`` relations are also allowed::
     assert users.jeanphix.company == 'My company'
 
 
+``Set`` fixtures can also be callable::
+
+    class UserSet(Set)
+        class __distillery__:
+            __model__ = User
+
+        admin = lambda s: create_user()
+
+
 ``Set`` can also create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter::
 
     users = UserSet(on_demand=True)
