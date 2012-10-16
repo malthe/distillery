@@ -121,6 +121,10 @@ class Set(object):
             fixture = super(Set, self).__getattribute__(attr)
             if isinstance(fixture, types.MethodType):
                 instance = fixture()
+                expected_class = self.__distillery__.__model__
+                if not isinstance(instance, expected_class):
+                    raise Exception("%s must return a %s instance" % \
+                        (fixture, expected_class.__name__))
             else:
                 kwargs = {}
                 for key in dir(fixture):
