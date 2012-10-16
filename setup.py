@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='distillery',
-    version='0.1',
+    version='0.2',
     author=u'jean-philippe serafin',
     author_email='serafinjp@gmail.com',
     py_modules=('distillery',),
