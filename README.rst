@@ -15,7 +15,9 @@ Installation
 Defining distilleries
 ---------------------
 
-Each distillery has a ``__model__`` and a set of attributes and methods. The ``__model__`` is the ORM model class from which instance will be produced::
+Each distillery has a ``__model__`` and a set of attributes and methods. The ``__model__`` is the ORM model class from which instance will be produced:
+
+.. code-block:: python
 
     class UserDistillery(MyOrmDistillery):
         __model__ = User
@@ -24,7 +26,9 @@ Each distillery has a ``__model__`` and a set of attributes and methods. The ``_
 Attributes
 ~~~~~~~~~~
 
-A distillery class attribute defines default values for specific model field::
+A distillery class attribute defines default values for specific model field:
+
+.. code-block:: python
 
     class UserDistillery(MyOrmDistillery):
         __model__ = User
@@ -37,7 +41,9 @@ All new ``User`` outputted from ``UserDistillery`` will have ``defaultusername``
 Methods (a.k.a. "lazy attributes")
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A distillery class method allow to build dinamic value for specific field::
+A distillery class method allow to build dinamic value for specific field:
+
+.. code-block:: python
 
     from distillery import lazy
 
@@ -63,7 +69,9 @@ Using distilleries
 Distillery.init()
 ~~~~~~~~~~~~~~~~~
 
-Inits and populates an instance::
+Inits and populates an instance:
+
+.. code-block:: python
 
     user = UserDistillery.init()
     assert user.username == "defaultusername"
@@ -77,7 +85,9 @@ Inits and populates an instance::
 Distillery.create()
 ~~~~~~~~~~~~~~~~~~~
 
-Inits, populates and persists an instance::
+Inits, populates and persists an instance:
+
+.. code-block:: python
 
     user = UserDistillery.create()
     assert user.username == "defaultusername"
@@ -89,7 +99,10 @@ Datasets
 
 ``distillery`` provides a ``Set`` class that act as a fixture container.
 
-A ``Set`` needs a ``__distillery__`` class member from where all instances will born::
+A ``Set`` needs a ``__distillery__`` class member from where all instances will born:
+
+
+.. code-block:: python
 
     from distillery import Set
 
@@ -101,13 +114,17 @@ A ``Set`` needs a ``__distillery__`` class member from where all instances will 
             username = 'jeanphix'
 
 
-Then simply instanciate the ``UserSet`` to access the fixture object::
+Then simply instanciate the ``UserSet`` to access the fixture object:
+
+.. code-block:: python
 
     users = UserSet()
     assert users.jeanphix.username == 'jeanphix'
 
 
-Cross ``Set`` relations are also allowed::
+Cross ``Set`` relations are also allowed:
+
+.. code-block:: python
 
     from distillery import Set
 
@@ -131,7 +148,9 @@ Cross ``Set`` relations are also allowed::
     assert users.jeanphix.company == 'My company'
 
 
-``Set`` fixtures can also be callable::
+``Set`` fixtures can also be callable:
+
+.. code-block:: python
 
     class ProfileSet(Set)
         class __distillery__:
@@ -140,7 +159,9 @@ Cross ``Set`` relations are also allowed::
         admin = lambda s: UserDistillery.create(username="admin").profile
 
 
-``Set`` can also create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter::
+``Set`` can also create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter:
+
+.. code-block:: python
 
     users = UserSet(on_demand=True)
     users.jeanphix  # jeanphix will be created here.
@@ -152,7 +173,9 @@ ORMs
 Django
 ~~~~~~
 
-Django models could be distilled using ``DjangoDistillery`` that only requires a ``__model__`` class member::
+Django models could be distilled using ``DjangoDistillery`` that only requires a ``__model__`` class member:
+
+.. code-block:: python
 
     from distillery import DjangoDistillery
 
@@ -167,7 +190,9 @@ Django models could be distilled using ``DjangoDistillery`` that only requires a
 SQLAlchemy
 ~~~~~~~~~~
 
-SQLAlchemy distilleries require a ``__model__`` and a ``__session__`` class members::
+SQLAlchemy distilleries require a ``__model__`` and a ``__session__`` class members:
+
+.. code-block:: python
 
     from distillery import SQLAlchemyDistillery
 
