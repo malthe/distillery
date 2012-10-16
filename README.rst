@@ -133,11 +133,11 @@ Cross ``Set`` relations are also allowed::
 
 ``Set`` fixtures can also be callable::
 
-    class UserSet(Set)
+    class ProfileSet(Set)
         class __distillery__:
-            __model__ = User
+            __model__ = Profile
 
-        admin = lambda s: create_user()
+        admin = lambda s: UserDistillery.create(username="admin").profile
 
 
 ``Set`` can also create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter::
