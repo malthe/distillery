@@ -111,3 +111,14 @@ class SetSuite():
             Users = UserSet
 
         self.assertEqual(Super().Users.jeanphix.username, 'jeanphix')
+
+    def test_after_create(self):
+        class NewUserSet(UserSet):
+            class admin:
+                username = 'admin'
+
+                @classmethod
+                def _after_create(cls, instance):
+                    instance.username = 'modified'
+
+        self.assertEqual(NewUserSet().admin.username, 'modified')

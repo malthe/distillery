@@ -158,6 +158,20 @@ Cross ``Set`` relations are also allowed:
 
         admin = lambda s: UserDistillery.create(username="admin").profile
 
+``Set`` fixtures can provide an ``_after_create`` listener:
+
+.. code-block:: python
+
+    class ProfileSet(Set):
+        class __distillery__:
+            __model__ = Profile
+
+        class admin:
+            @classmethod
+            def _after_create(cls, profile):
+                profile.name = 'Full name'
+
+    assert ProfileSet().admin.name == 'Full name'
 
 ``Set`` can create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter:
 

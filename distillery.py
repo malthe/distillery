@@ -134,6 +134,9 @@ class Set(object):
                     if not key.startswith('_'):
                         kwargs[key] = self._get_member(fixture, key)
                 instance = self.__distillery__.create(**kwargs)
+            if not issubclass(instance.__class__, Set) and \
+                    hasattr(fixture, '_after_create'):
+                fixture._after_create(instance)
             self._fixtures[attr] = instance
         return self._fixtures[attr]
 
