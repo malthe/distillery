@@ -148,7 +148,7 @@ Cross ``Set`` relations are also allowed:
     assert users.jeanphix.company == 'My company'
 
 
-``Set`` fixtures can also be callable:
+``Set`` fixtures can be callable:
 
 .. code-block:: python
 
@@ -159,13 +159,21 @@ Cross ``Set`` relations are also allowed:
         admin = lambda s: UserDistillery.create(username="admin").profile
 
 
-``Set`` can also create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter:
+``Set`` can create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter:
 
 .. code-block:: python
 
     users = UserSet(on_demand=True)
     users.jeanphix  # jeanphix will be created here.
 
+``Set`` can act as container for other sets:
+
+.. code-block:: python
+
+    class fixtures(Set):
+        users = UserSet
+
+    assert fixtures().users.jeanphix.username == 'jeanphix'
 
 ORMs
 ----
