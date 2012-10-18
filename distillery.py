@@ -161,7 +161,7 @@ class Set(object):
                     set_class = member._set_class
                 else:
                     set_class = member.im_class
-                set_ =  self._get_foreign_set_instance(set_class)
+                set_ = self._get_foreign_set_instance(set_class)
                 return getattr(set_, member.__name__)
             except AttributeError:
                 raise Exception('%s does not appear to be a valid fixture' \
