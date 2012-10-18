@@ -94,8 +94,11 @@ class SetSuite():
     def test_set_callable_member(self):
         class NewUserSet(UserSet):
             admin = lambda s: self.UserDistillery.create(username="admin")
+            user = lambda s: self.UserDistillery.create(username="user")
 
-        self.assertEqual(NewUserSet().admin.username, 'admin')
+        users = NewUserSet()
+        self.assertEqual(users.admin.username, 'admin')
+        self.assertEqual(users.user.username, 'user')
 
     def test_set_callable_member_invalid_type(self):
         class NewUserSet(UserSet):
