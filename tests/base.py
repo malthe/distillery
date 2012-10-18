@@ -105,3 +105,9 @@ class SetSuite():
             invalid = lambda s: 'invalid type'
 
         self.assertRaises(NewUserSet)
+
+    def test_embedded_set(self):
+        class Super(Set):
+            Users = UserSet
+
+        self.assertEqual(Super().Users.jeanphix.username, 'jeanphix')

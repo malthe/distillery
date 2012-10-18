@@ -104,8 +104,6 @@ class Set(object):
         return new
 
     def __init__(self, on_demand=False):
-        if not hasattr(self, '__distillery__'):
-            raise AttributeError('A Set must have a `__distillery__` member.')
         self._on_demand = on_demand
         if not on_demand:
             for member in dir(self):
@@ -120,12 +118,17 @@ class Set(object):
         elif not attr in self._fixtures:
             fixture = super(Set, self).__getattribute__(attr)
             if isinstance(fixture, types.MethodType):
+                #  Fixture is a callable
                 instance = fixture()
                 expected_class = self.__distillery__.__model__
                 if not isinstance(instance, expected_class):
                     raise Exception("%s must return a %s instance" % \
                         (fixture, expected_class.__name__))
+            elif issubclass(fixture, Set):
+                #  Fixture is an embedded set
+                instance = self._get_foreign_set_instance(fixture)
             else:
+                #  Fixture is a fixture
                 kwargs = {}
                 for key in dir(fixture):
                     if not key.startswith('_'):
@@ -146,6 +149,11 @@ class Set(object):
             return Set._instances[cls.__name__]()
         return cls(on_demand)
 
+    def _get_foreign_set_instance(self, set_class):
+        set_ = set_class._get_instance(self._on_demand)
+        self._foreign_sets[set_class.__name__] = set_
+        return set_
+
     def _get_member(self, fixture, key):
         def _get_foreign(member):
             try:
@@ -153,8 +161,7 @@ class Set(object):
                     set_class = member._set_class
                 else:
                     set_class = member.im_class
-                set_ =  set_class._get_instance(self._on_demand)
-                self._foreign_sets[set_class.__name__] = set_
+                set_ =  self._get_foreign_set_instance(set_class)
                 return getattr(set_, member.__name__)
             except AttributeError:
                 raise Exception('%s does not appear to be a valid fixture' \
