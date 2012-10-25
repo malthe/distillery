@@ -1,7 +1,7 @@
 Distillery
 ==========
 
-.. image:: https://secure.travis-ci.org/jeanphix/distillery.png
+.. image:: https://secure.travis-ci.org/Birdback/distillery.png
 
 ``distillery`` is another `fatory_girl <https://github.com/thoughtbot/factory_girl>`_ like for python ORMs.
 
