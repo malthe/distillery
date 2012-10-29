@@ -189,6 +189,20 @@ Cross ``Set`` relations are also allowed:
 
     assert fixtures().users.jeanphix.username == 'jeanphix'
 
+
+Self relation within a ``Set`` can be handle with a callable:
+
+.. code-block:: python
+
+    class UserSet(Set):
+        # ...
+        class my_user:
+            # ...
+
+        class another_user:
+            best_friend = classmethod(lambda c: UserSet.my_user)
+
+
 ORMs
 ----
 
