@@ -122,3 +122,12 @@ class SetSuite():
                     instance.username = 'modified'
 
         self.assertEqual(NewUserSet().admin.username, 'modified')
+
+    def test_set_fixture_callable_member(self):
+        class NewUserSet(UserSet):
+            class admin:
+                username = 'admin'
+                company = classmethod(lambda c: CompanySet.my_company)
+
+        self.assertEqual(NewUserSet().admin.company.name, 'My company')
+

@@ -174,7 +174,13 @@ class Set(object):
         if isinstance(member, list) or isinstance(member, tuple):
             member = [_get_foreign(m) for m in member]
         elif callable(member):
-            member = _get_foreign(member)
+            if hasattr(member, 'im_class') and \
+                    not issubclass(member.im_class, Set):
+                member = member()
+                if hasattr(member, '_set_class'):
+                    member = _get_foreign(member)
+            else:
+                member = _get_foreign(member)
         return member
 
 
