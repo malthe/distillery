@@ -60,6 +60,15 @@ class DistillerySuite():
         user2 = self.UserDistillery.init(username="anotheruser")
         self.assertEqual(user1.index + 1, user2.index)
 
+    def test_after_create(self):
+        class NewUserDistillery(self.UserDistillery):
+            @classmethod
+            def _after_create(cls, instance):
+                instance.username = "newusername"
+
+        user = NewUserDistillery.create()
+        self.assertEqual(user.username, "newusername")
+
 
 class SetSuite():
     @classmethod
