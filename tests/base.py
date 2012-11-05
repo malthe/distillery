@@ -139,4 +139,3 @@ class SetSuite():
                 company = classmethod(lambda c: CompanySet.my_company)
 
         self.assertEqual(NewUserSet().admin.company.name, 'My company')
-
