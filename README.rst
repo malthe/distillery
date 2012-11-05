@@ -62,6 +62,24 @@ All new ``User`` outputted from ``UserDistillery`` will have an ``email_address`
 Note: all lazies received an ``instance`` and a ``sequence`` that are respectively the object instance and an auto incremented sequence.
 
 
+After create hook
+~~~~~~~~~~~~~~~~~
+
+A distillery can provide an ``_after_create`` class method.
+
+.. code-block:: python
+
+    class UserDistillery(MyOrmDistillery):
+        __model__ = User
+
+        username = "defaultusername"
+
+        @classmethod
+        def _after_create(cls, instance):
+            # Do stuff after instance creation
+            # ...
+
+
 Using distilleries
 ------------------
 
