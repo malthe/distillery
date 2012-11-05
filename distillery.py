@@ -23,7 +23,10 @@ class Distillery(object):
         """Inits, populates and saves a object instance.
         """
         instance = cls.init(**kwargs)
-        return cls.save(instance)
+        instance = cls.save(instance)
+        if hasattr(cls, '_after_create'):
+            cls._after_create(instance)
+        return instance
 
     @classmethod
     def init(cls, **kwargs):
