@@ -162,16 +162,15 @@ class Set(object):
 
     def _get_member(self, fixture, key):
         def _get_foreign(member):
-            try:
-                if hasattr(member, '_set_class'):
-                    set_class = member._set_class
-                else:
-                    set_class = member.im_class
-                set_ = self._get_foreign_set_instance(set_class)
-                return getattr(set_, member.__name__)
-            except AttributeError:
+            if hasattr(member, '_set_class'):
+                set_class = member._set_class
+            elif hasattr(member, 'im_class'):
+                set_class = member.im_class
+            else:
                 raise Exception('%s does not appear to be a valid fixture' \
                     % member)
+            set_ = self._get_foreign_set_instance(set_class)
+            return getattr(set_, member.__name__)
 
         member = getattr(fixture, key)
         if isinstance(member, list) or isinstance(member, tuple):
