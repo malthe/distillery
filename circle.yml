@@ -1,0 +1,7 @@
+checkout:
+  post:
+    - pip install django
+
+test:
+  override:
+    - `which django-admin.py` test app --settings=tests.dj.settings --pythonpath=. --unit-tests
