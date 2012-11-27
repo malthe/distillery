@@ -4,4 +4,4 @@ checkout:
 
 test:
   override:
-    - `which django-admin.py` test app --settings=tests.dj.settings --pythonpath=. --unit-tests
+    - django-admin.py test app --settings=tests.dj.settings --pythonpath=. --unit-tests
