@@ -19,6 +19,16 @@ class Distillery(object):
     """Base class for ORM dependent distilleries.
     """
     @classmethod
+    def bulk(cls, count, **kwargs):
+        """Bluck creates new instances.
+        """
+        instances = []
+        for i in range(count):
+            k = {key: kwargs[key] % {'i': str(i)} for key in kwargs}
+            instances.append(cls.create(**k))
+        return instances
+
+    @classmethod
     def create(cls, **kwargs):
         """Inits, populates and saves a object instance.
         """
