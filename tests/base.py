@@ -80,6 +80,11 @@ class DistillerySuite():
         self.assertEqual(len(users), 1)
         self.assertEqual(users[0].username, 'defaultuser')
 
+    def test_bulk_insert_non_string(self):
+        company = self.CompanyDistillery.create(name='another company')
+        users = self.UserDistillery.bulk(1, company=company)
+        self.assertEqual(users[0].company, company)
+
 
 class SetSuite():
     @classmethod
