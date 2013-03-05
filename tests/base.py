@@ -69,6 +69,17 @@ class DistillerySuite():
         user = NewUserDistillery.create()
         self.assertEqual(user.username, "newusername")
 
+    def test_bulk_insert_format(self):
+        users = self.UserDistillery.bulk(10, username='user_%(i)s')
+        self.assertEqual(len(users), 10)
+        self.assertEqual(users[0].username, 'user_0')
+        self.assertEqual(users[6].username, 'user_6')
+
+    def test_bulk_insert_default(self):
+        users = self.UserDistillery.bulk(1)
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0].username, 'defaultuser')
+
 
 class SetSuite():
     @classmethod
