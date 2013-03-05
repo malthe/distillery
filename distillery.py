@@ -22,9 +22,15 @@ class Distillery(object):
     def bulk(cls, count, **kwargs):
         """Bluck creates new instances.
         """
+        def format(value, i):
+            if type(value) in (str, unicode):
+                value = value % {'i': str(i)}
+            return value
+
         instances = []
         for i in range(count):
-            k = {key: kwargs[key] % {'i': str(i)} for key in kwargs}
+
+            k = {key: format(kwargs[key], i) for key in kwargs}
             instances.append(cls.create(**k))
         return instances
 
