@@ -112,6 +112,17 @@ Inits, populates and persists an instance:
     assert user.id is not None
 
 
+Distillery.bulk()
+~~~~~~~~~~~~~~~~~
+
+Massively creates instances.
+
+.. code-block:: python
+
+    users = UserDistillery.bulk(12, username='user_%(i)%')
+    assert users[7].username = 'user_7'
+
+
 Datasets
 --------
 
