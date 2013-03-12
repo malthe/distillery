@@ -40,6 +40,10 @@ class DistillerySuite():
         user = self.UserDistillery.init(company=company)
         self.assertEqual(user.company.name, 'Another company')
 
+    def test_init_callable_kwarg(self):
+        company = self.CompanyDistillery.init(name=lambda i: "My company")
+        self.assertEqual(company.name, "My company")
+
     def test_create(self):
         user = self.UserDistillery.create()
         self.assertTrue(user.id is not None)
