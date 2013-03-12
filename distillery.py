@@ -54,6 +54,8 @@ class Distillery(object):
             if not attr in dir(instance):
                 raise AttributeError("`%s` has no attribute `%s`." \
                     % (instance.__class__.__name__, attr))
+            if callable(value):
+                value = value(instance)
             setattr(instance, attr, value)
 
         instance = cls.__model__()
