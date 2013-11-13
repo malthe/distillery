@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import weakref
+
 import types
 
 
 #  Stores all lazy attributes for counter creation
 _lazies = []
+_contexts = []
 
 
 def lazy(f):
@@ -111,17 +112,19 @@ class Set(object):
     """Fixtures dataset.
     """
     __metaclass__ = SetMeta
-    _instances = {}
 
     def __new__(cls, *args, **kwargs):
         """Creates new `cls` instance or return the existing one.
         """
-        if Set._instances.get(cls.__name__):
-            return Set._instances.get(cls.__name__)()
+        context = _contexts[-1] if _contexts else {}
+        _contexts.append(context)
+        instance = context.get(cls.__name__)
+        if instance is not None:
+            return instance
         new = super(Set, cls).__new__(cls, *args, **kwargs)
         new._fixtures = {}
         new._foreign_sets = {}
-        Set._instances[cls.__name__] = weakref.ref(new)
+        context[cls.__name__] = new
         return new
 
     def __init__(self, on_demand=False):
@@ -130,6 +133,7 @@ class Set(object):
             for member in dir(self):
                 if not member.startswith('_'):
                     getattr(self, member)
+        _contexts.pop()
 
     def __getattribute__(self, attr):
         if attr.startswith('_'):
@@ -161,17 +165,14 @@ class Set(object):
             self._fixtures[attr] = instance
         return self._fixtures[attr]
 
-    def __del__(self):
-        try:
-            del Set._instances[self.__class__.__name__]
-        except KeyError:
-            pass
-
     @classmethod
     def _get_instance(cls, on_demand):
-        if cls.__name__ in Set._instances:
-            return Set._instances[cls.__name__]()
-        return cls(on_demand)
+        context = _contexts[-1]
+        instance = context.get(cls.__name__)
+        if instance is None:
+            instance = cls(on_demand)
+            context[cls.__name__] = instance
+        return instance
 
     def _get_foreign_set_instance(self, set_class):
         set_ = set_class._get_instance(self._on_demand)
