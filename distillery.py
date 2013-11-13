@@ -134,9 +134,9 @@ class Set(object):
     def __getattribute__(self, attr):
         if attr.startswith('_'):
             return super(Set, self).__getattribute__(attr)
-        elif not attr in dir(self):
+        if not attr in dir(self):
             raise AttributeError('Invalid fixture `%s`.' % attr)
-        elif not attr in self._fixtures:
+        if not attr in self._fixtures:
             fixture = super(Set, self).__getattribute__(attr)
             if isinstance(fixture, types.MethodType):
                 #  Fixture is a callable
