@@ -5,7 +5,8 @@ import weakref
 
 #  Stores all lazy attributes for counter creation
 _lazies = []
-_contexts = [weakref.WeakValueDictionary()]
+_cache = weakref.WeakValueDictionary()
+_scope = []
 
 
 def lazy(f):
@@ -60,6 +61,7 @@ class Distillery(object):
             setattr(instance, attr, value)
 
         instance = cls.__model__()
+
         #  kwargs
         for key in kwargs:
             set(instance, key, kwargs.get(key))
@@ -116,15 +118,17 @@ class Set(object):
     def __new__(cls, *args, **kwargs):
         """Creates new `cls` instance or return the existing one.
         """
-        instance = _contexts[0].get(cls)
+
+        instance = _cache.get(cls)
 
         if instance is None:
             instance = super(Set, cls).__new__(cls, *args, **kwargs)
             instance._fixtures = {}
             instance._foreign_sets = {}
-            _contexts[0][cls] = instance
+            _cache[cls] = instance
 
-        _contexts.append(dict(_contexts[0]))
+        _scope.append(set((instance, )))
+        _scope[0].add(instance)
 
         return instance
 
@@ -136,7 +140,7 @@ class Set(object):
                     if not member.startswith('_'):
                         getattr(self, member)
         finally:
-            _contexts.pop()
+            assert self in _scope.pop()
 
     def __getattribute__(self, attr):
         if attr.startswith('_'):
@@ -170,11 +174,10 @@ class Set(object):
 
     @classmethod
     def _get_instance(cls, on_demand):
-        context = _contexts[-1]
-        instance = context.get(cls)
+        instance = _cache.get(cls)
         if instance is None:
             instance = cls(on_demand)
-            context[cls] = instance
+            _cache[cls] = instance
         return instance
 
     def _get_foreign_set_instance(self, set_class):
