@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from distillery import Set
+from distillery import Set, _contexts
 
 
 class CompanySet(Set):
@@ -90,11 +90,16 @@ class DistillerySuite():
         self.assertEqual(users[0].company, company)
 
 
-class SetSuite():
+class SetSuite(object):
     @classmethod
     def setUpClass(cls):
         CompanySet.__distillery__ = cls.CompanyDistillery
         UserSet.__distillery__ = cls.UserDistillery
+
+    def tearDown(self):
+        super(SetSuite, self).tearDown()
+        self.assertEqual(len(_contexts), 1, _contexts)
+        self.assertEqual(len(_contexts[0]), 0)
 
     def test_cant_be_instanciate_twice(self):
         UserSet()

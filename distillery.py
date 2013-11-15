@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import types
-
+import weakref
 
 #  Stores all lazy attributes for counter creation
 _lazies = []
-_contexts = []
+_contexts = [weakref.WeakValueDictionary()]
 
 
 def lazy(f):
@@ -116,24 +116,27 @@ class Set(object):
     def __new__(cls, *args, **kwargs):
         """Creates new `cls` instance or return the existing one.
         """
-        context = _contexts[-1] if _contexts else {}
-        _contexts.append(context)
-        instance = context.get(cls.__name__)
-        if instance is not None:
-            return instance
-        new = super(Set, cls).__new__(cls, *args, **kwargs)
-        new._fixtures = {}
-        new._foreign_sets = {}
-        context[cls.__name__] = new
-        return new
+        instance = _contexts[0].get(cls)
+
+        if instance is None:
+            instance = super(Set, cls).__new__(cls, *args, **kwargs)
+            instance._fixtures = {}
+            instance._foreign_sets = {}
+            _contexts[0][cls] = instance
+
+        _contexts.append(dict(_contexts[0]))
+
+        return instance
 
     def __init__(self, on_demand=False):
         self._on_demand = on_demand
-        if not on_demand:
-            for member in dir(self):
-                if not member.startswith('_'):
-                    getattr(self, member)
-        _contexts.pop()
+        try:
+            if not on_demand:
+                for member in dir(self):
+                    if not member.startswith('_'):
+                        getattr(self, member)
+        finally:
+            _contexts.pop()
 
     def __getattribute__(self, attr):
         if attr.startswith('_'):
@@ -168,10 +171,10 @@ class Set(object):
     @classmethod
     def _get_instance(cls, on_demand):
         context = _contexts[-1]
-        instance = context.get(cls.__name__)
+        instance = context.get(cls)
         if instance is None:
             instance = cls(on_demand)
-            context[cls.__name__] = instance
+            context[cls] = instance
         return instance
 
     def _get_foreign_set_instance(self, set_class):
