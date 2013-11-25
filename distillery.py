@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-import weakref
-import types
 
+import types
+import weakref
 
 #  Stores all lazy attributes for counter creation
 _lazies = []
+_cache = weakref.WeakValueDictionary()
+_scope = []
 
 
 def lazy(f):
@@ -59,6 +61,7 @@ class Distillery(object):
             setattr(instance, attr, value)
 
         instance = cls.__model__()
+
         #  kwargs
         for key in kwargs:
             set(instance, key, kwargs.get(key))
@@ -111,32 +114,40 @@ class Set(object):
     """Fixtures dataset.
     """
     __metaclass__ = SetMeta
-    _instances = {}
 
     def __new__(cls, *args, **kwargs):
         """Creates new `cls` instance or return the existing one.
         """
-        if Set._instances.get(cls.__name__):
-            return Set._instances.get(cls.__name__)()
-        new = super(Set, cls).__new__(cls, *args, **kwargs)
-        new._fixtures = {}
-        new._foreign_sets = {}
-        Set._instances[cls.__name__] = weakref.ref(new)
-        return new
+
+        instance = _cache.get(cls)
+
+        if instance is None:
+            instance = super(Set, cls).__new__(cls, *args, **kwargs)
+            instance._fixtures = {}
+            instance._foreign_sets = {}
+            _cache[cls] = instance
+
+        _scope.append(set((instance, )))
+        _scope[0].add(instance)
+
+        return instance
 
     def __init__(self, on_demand=False):
         self._on_demand = on_demand
-        if not on_demand:
-            for member in dir(self):
-                if not member.startswith('_'):
-                    getattr(self, member)
+        try:
+            if not on_demand:
+                for member in dir(self):
+                    if not member.startswith('_'):
+                        getattr(self, member)
+        finally:
+            assert self in _scope.pop()
 
     def __getattribute__(self, attr):
         if attr.startswith('_'):
             return super(Set, self).__getattribute__(attr)
-        elif not attr in dir(self):
+        if not attr in dir(self):
             raise AttributeError('Invalid fixture `%s`.' % attr)
-        elif not attr in self._fixtures:
+        if not attr in self._fixtures:
             fixture = super(Set, self).__getattribute__(attr)
             if isinstance(fixture, types.MethodType):
                 #  Fixture is a callable
@@ -161,17 +172,13 @@ class Set(object):
             self._fixtures[attr] = instance
         return self._fixtures[attr]
 
-    def __del__(self):
-        try:
-            del Set._instances[self.__class__.__name__]
-        except KeyError:
-            pass
-
     @classmethod
     def _get_instance(cls, on_demand):
-        if cls.__name__ in Set._instances:
-            return Set._instances[cls.__name__]()
-        return cls(on_demand)
+        instance = _cache.get(cls)
+        if instance is None:
+            instance = cls(on_demand)
+            _cache[cls] = instance
+        return instance
 
     def _get_foreign_set_instance(self, set_class):
         set_ = set_class._get_instance(self._on_demand)

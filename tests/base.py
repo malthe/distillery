@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from distillery import Set
+from distillery import Set, lazy, _scope, _cache
 
 
 class CompanySet(Set):
@@ -90,11 +90,16 @@ class DistillerySuite():
         self.assertEqual(users[0].company, company)
 
 
-class SetSuite():
+class SetSuite(object):
     @classmethod
     def setUpClass(cls):
         CompanySet.__distillery__ = cls.CompanyDistillery
         UserSet.__distillery__ = cls.UserDistillery
+
+    def tearDown(self):
+        super(SetSuite, self).tearDown()
+        self.assertEqual(len(_scope), 0, _scope)
+        self.assertEqual(len(_cache), 0, dict(_cache))
 
     def test_cant_be_instanciate_twice(self):
         UserSet()
@@ -157,5 +162,15 @@ class SetSuite():
             class admin:
                 username = 'admin'
                 company = classmethod(lambda c: CompanySet.my_company)
+
+        self.assertEqual(NewUserSet().admin.company.name, 'My company')
+
+    def test_set_fixture_callable_distillery_member_test_cache(self):
+        class NewUserSet(UserSet):
+            class __distillery__(self.UserDistillery):
+                company = lazy(lambda *args: CompanySet().my_company)
+
+            class admin:
+                username = 'admin'
 
         self.assertEqual(NewUserSet().admin.company.name, 'My company')

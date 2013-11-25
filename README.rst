@@ -3,7 +3,9 @@ Distillery
 
 .. image:: https://secure.travis-ci.org/Birdback/distillery.png
 
-``distillery`` is another `fatory_girl <https://github.com/thoughtbot/factory_girl>`_ like for python ORMs.
+``distillery`` is another `factory_girl
+<https://github.com/thoughtbot/factory_girl>`_ like library for python
+ORMs.
 
 
 Installation
@@ -12,10 +14,12 @@ Installation
 ``pip install distillery``
 
 
-Defining distilleries
----------------------
+Distilleries
+------------
 
-Each distillery has a ``__model__`` and a set of attributes and methods. The ``__model__`` is the ORM model class from which instance will be produced:
+Each distillery has a ``__model__`` and a set of attributes and
+methods. The ``__model__`` is the ORM model class from which instance
+will be produced:
 
 .. code-block:: python
 
@@ -26,7 +30,8 @@ Each distillery has a ``__model__`` and a set of attributes and methods. The ``_
 Attributes
 ~~~~~~~~~~
 
-A distillery class attribute defines default values for specific model field:
+A distillery class attribute defines default values for specific model
+field:
 
 .. code-block:: python
 
@@ -35,18 +40,19 @@ A distillery class attribute defines default values for specific model field:
 
         username = "defaultusername"
 
-All new ``User`` outputted from ``UserDistillery`` will have ``defaultusername`` as ``username`` field value while there's no override.
+The distillery's attribute values act as *defaults*. If a ``User``
+object is created using this distillery, its ``username`` attribute
+will default to ``"defaultusername"``.
 
 
-Methods (a.k.a. "lazy attributes")
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lazy attributes
+~~~~~~~~~~~~~~~
 
-A distillery class method allow to build dinamic value for specific field:
+Using the ``lazy`` decorator, you can provide dynamic attributes.
 
 .. code-block:: python
 
     from distillery import lazy
-
 
     class UserDistillery(MyOrmDistillery):
         __model__ = User
@@ -57,15 +63,18 @@ A distillery class method allow to build dinamic value for specific field:
         def email_address(cls, instance, sequence):
             return "%s@%s" % (instance.username, instance.company.domain)
 
-All new ``User`` outputted from ``UserDistillery`` will have an ``email_address`` computed from his username and his company domain.
+All new ``User`` created from ``UserDistillery`` will have an
+``email_address`` computed from his username and his company domain.
 
-Note: all lazies received an ``instance`` and a ``sequence`` that are respectively the object instance and an auto incremented sequence.
+Note: all lazies received an ``instance`` and a ``sequence`` that are
+the object instance and an auto-incremented sequence, respectively.
 
 
-After create hook
-~~~~~~~~~~~~~~~~~
+Hooks
+~~~~~
 
-A distillery can provide an ``_after_create`` class method.
+A distillery can provide an ``_after_create`` class method to hook
+into the factory machinery.
 
 .. code-block:: python
 
@@ -80,14 +89,10 @@ A distillery can provide an ``_after_create`` class method.
             # ...
 
 
-Using distilleries
-------------------
-
-
 Distillery.init()
 ~~~~~~~~~~~~~~~~~
 
-Inits and populates an instance:
+The ``init()`` method creates and populates a new instance.
 
 .. code-block:: python
 
@@ -103,7 +108,8 @@ Inits and populates an instance:
 Distillery.create()
 ~~~~~~~~~~~~~~~~~~~
 
-Inits, populates and persists an instance:
+The ``create()`` method initializes the object using ``init()`` and
+subsequently *saves* it.
 
 .. code-block:: python
 
@@ -115,26 +121,25 @@ Inits, populates and persists an instance:
 Distillery.bulk()
 ~~~~~~~~~~~~~~~~~
 
-Massively creates instances.
+Creates instances in bulk.
 
 .. code-block:: python
 
-    users = UserDistillery.bulk(12, username='user_%(i)%')
+    users = UserDistillery.bulk(12, username="user_%(i)%")
     assert users[7].username = 'user_7'
 
 
-Datasets
---------
+Sets
+----
 
-``distillery`` provides a ``Set`` class that act as a fixture container.
+The ``distillery.Set`` class acts as a fixture container.
 
-A ``Set`` needs a ``__distillery__`` class member from where all instances will born:
-
+It's required to define a ``__distillery__`` attribute which is used
+to create objects.
 
 .. code-block:: python
 
     from distillery import Set
-
 
     class UserSet(Set):
         __distillery__ = UserDistillery
@@ -143,27 +148,33 @@ A ``Set`` needs a ``__distillery__`` class member from where all instances will 
             username = 'jeanphix'
 
 
-Then simply instanciate the ``UserSet`` to access the fixture object:
+To create the fixtures, simply instantiate the set.
 
 .. code-block:: python
 
     users = UserSet()
     assert users.jeanphix.username == 'jeanphix'
 
+Importantly, as long as a reference to the *instantiated set* is held
+(e.g. the ``users`` variable in this example), the set can be called
+again and the same instance is returned:
 
-Cross ``Set`` relations are also allowed:
+.. code-block:: python
+
+    assert UserSet() is UserSet()
+
+You can reference other sets, too. Note that you must reference using
+the class, or use a lazy attribute (described later):
 
 .. code-block:: python
 
     from distillery import Set
 
-
     class CompanySet(Set):
         __distillery__ = CompanyDistillery
 
         class my_company:
-            name = "My company"
-
+            name = 'My company'
 
     class UserSet(Set):
         __distillery__ = UserDistillery
@@ -177,7 +188,8 @@ Cross ``Set`` relations are also allowed:
     assert users.jeanphix.company == 'My company'
 
 
-``Set`` fixtures can be callable:
+In addition to classes, methods can be defined; each will result in an
+object which is added to the set.
 
 .. code-block:: python
 
@@ -185,9 +197,44 @@ Cross ``Set`` relations are also allowed:
         class __distillery__:
             __model__ = Profile
 
-        admin = lambda s: UserDistillery.create(username="admin").profile
+        admin = lambda s: UserDistillery.create(username='admin').profile
 
-``Set`` fixtures can provide an ``_after_create`` listener:
+This functionality extends to class-based references. Note that the
+reference must be resolvable at the point of creation; circular
+relationships are currently not supported.
+
+.. code-block:: python
+
+    class UserSet(Set):
+        class peter:
+            friend = None
+
+        class paul:
+            friend = classmethod(lambda c: UserSet.peter)
+
+
+If the ``on_demand`` flag is set, objects are created only when first
+accessed.
+
+.. code-block:: python
+
+    users = UserSet(on_demand=True)
+    users.jeanphix  # jeanphix will be created here.
+
+Finally, sets can be nested.
+
+.. code-block:: python
+
+    class fixtures(Set):
+        users = UserSet
+
+    assert fixtures().users.jeanphix.username == 'jeanphix'
+
+
+Hooks
+~~~~~
+
+Each fixture in a set can provide an ``_after_create`` listener:
 
 .. code-block:: python
 
@@ -202,43 +249,18 @@ Cross ``Set`` relations are also allowed:
 
     assert ProfileSet().admin.name == 'Full name'
 
-``Set`` can create fixture instances on demand when they are accessed by setting ``on_demand`` constructor parameter:
-
-.. code-block:: python
-
-    users = UserSet(on_demand=True)
-    users.jeanphix  # jeanphix will be created here.
-
-``Set`` can act as container for other sets:
-
-.. code-block:: python
-
-    class fixtures(Set):
-        users = UserSet
-
-    assert fixtures().users.jeanphix.username == 'jeanphix'
-
-
-Self relation within a ``Set`` can be handle with a callable:
-
-.. code-block:: python
-
-    class UserSet(Set):
-        # ...
-        class my_user:
-            # ...
-
-        class another_user:
-            best_friend = classmethod(lambda c: UserSet.my_user)
-
 
 ORMs
 ----
 
+Both Django and SQLAlchemy are supported.
+
+
 Django
 ~~~~~~
 
-Django models could be distilled using ``DjangoDistillery`` that only requires a ``__model__`` class member:
+Django models could be distilled using ``DjangoDistillery`` that only
+requires a ``__model__`` class member:
 
 .. code-block:: python
 
@@ -255,7 +277,8 @@ Django models could be distilled using ``DjangoDistillery`` that only requires a
 SQLAlchemy
 ~~~~~~~~~~
 
-SQLAlchemy distilleries require a ``__model__`` and a ``__session__`` class members:
+SQLAlchemy distilleries require both the ``__model__`` and
+``__session__`` attributes.
 
 .. code-block:: python
 
