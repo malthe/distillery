@@ -7,3 +7,4 @@ DATABASES = {
     }
 }
 INSTALLED_APPS = ['tests.dj.app']
+SECRET_KEY = 'test'
