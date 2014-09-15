@@ -192,8 +192,9 @@ class Set(object):
             else:
                 #  Fixture is a fixture
                 kwargs = {}
-                for key in iterfixture(fixture):
-                    kwargs[key] = self._get_member(fixture, key)
+                for key in dir(fixture):
+                    if not key.startswith('_'):
+                        kwargs[key] = self._get_member(fixture, key)
                 instance = self.__distillery__.create(**kwargs)
             if not issubclass(instance.__class__, Set) and \
                     hasattr(fixture, '_after_create'):
