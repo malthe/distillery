@@ -17,6 +17,31 @@ def lazy(f):
     return classmethod(f)
 
 
+def get_priority(value):
+    if isinstance(value, type) and issubclass(value, Set):
+        return SetMeta.classes[value]
+
+    return 0
+
+
+def iterfixture(fixture):
+    members = []
+
+    d = dict(type(fixture).__dict__)
+    d.update(fixture.__dict__)
+
+    for name, value in d.items():
+        if name.startswith('_'):
+            continue
+
+        members.append((get_priority(value), name))
+
+    if not members:
+        return members
+
+    return zip(*sorted(members))[1]
+
+
 class Distillery(object):
     """Base class for ORM dependent distilleries.
     """
@@ -100,13 +125,19 @@ class Distillery(object):
 class SetMeta(type):
     """Adds a `_set_class` property to all fixtures class in a set.
     """
+
+    counter = 0
+    classes = weakref.WeakKeyDictionary()
+
     def __new__(meta, name, bases, dict_):
+        meta.counter += 1
         new = type.__new__(meta, name, bases, dict_)
         for key in dict_:
             if not key.startswith('_'):
                 member = getattr(new, key)
                 if not isinstance(member, types.MethodType):
                     setattr(member, '_set_class', new)
+        meta.classes[new] = meta.counter
         return new
 
 
@@ -136,9 +167,8 @@ class Set(object):
         self._on_demand = on_demand
         try:
             if not on_demand:
-                for member in dir(self):
-                    if not member.startswith('_'):
-                        getattr(self, member)
+                for member in iterfixture(self):
+                    getattr(self, member)
         finally:
             assert self in _scope.pop()
 
@@ -162,9 +192,8 @@ class Set(object):
             else:
                 #  Fixture is a fixture
                 kwargs = {}
-                for key in dir(fixture):
-                    if not key.startswith('_'):
-                        kwargs[key] = self._get_member(fixture, key)
+                for key in iterfixture(fixture):
+                    kwargs[key] = self._get_member(fixture, key)
                 instance = self.__distillery__.create(**kwargs)
             if not issubclass(instance.__class__, Set) and \
                     hasattr(fixture, '_after_create'):
