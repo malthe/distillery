@@ -24,11 +24,30 @@ def get_priority(value):
     return 0
 
 
-def iterfixture(fixture):
+def iter_bases(cls):
+    yield cls
+
+    for base in cls.__bases__:
+        if not type(base) is type(cls):
+            continue
+
+        for cls in iter_bases(base):
+            yield cls
+
+
+def get_dict(value):
+    d = {}
+    for base in reversed(list(iter_bases(type(value)))):
+        d.update(base.__dict__)
+
+    d.update(value.__dict__)
+    return d
+
+
+def iter_set(fixture):
     members = []
 
-    d = dict(type(fixture).__dict__)
-    d.update(fixture.__dict__)
+    d = get_dict(fixture)
 
     for name, value in d.items():
         if name.startswith('_'):
@@ -167,7 +186,7 @@ class Set(object):
         self._on_demand = on_demand
         try:
             if not on_demand:
-                for member in iterfixture(self):
+                for member in iter_set(self):
                     getattr(self, member)
         finally:
             assert self in _scope.pop()
